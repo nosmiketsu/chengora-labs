@@ -67,47 +67,54 @@ form?.addEventListener('submit', async (event) => {
   }
 
   try {
-    const formData = new FormData(form);
+  const formData = new FormData(form);
 
-    const response = await fetch(
-      'https://formsubmit.co/ajax/kimhaba19@gmail.com',
-      {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json'
-        },
-        body: formData
-      }
-    );
+  const data = Object.fromEntries(formData.entries());
 
-    if (!response.ok) {
-      throw new Error('Submission failed');
+  const response = await fetch(
+    'https://formsubmit.co/ajax/kimhaba19@gmail.com',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(data)
     }
+  );
 
-    if (submitButton) {
-      submitButton.innerHTML =
-        'Brief received <span aria-hidden="true">→</span>';
-    }
+  const result = await response.json();
 
-    if (status) {
-      status.textContent =
-        'Thanks — the next step starts with a clear brief.';
-    }
+  console.log('FormSubmit response:', result);
 
-    form.reset();
-
-  } catch (error) {
-    if (submitButton) {
-      submitButton.disabled = false;
-      submitButton.innerHTML =
-        'Send project brief <span aria-hidden="true">→</span>';
-    }
-
-    if (status) {
-      status.textContent =
-        'Something went wrong. Please try again.';
-    }
-
-    console.error('Contact form error:', error);
+  if (!response.ok || !result.success) {
+    throw new Error(result.message || 'Submission failed');
   }
-});
+
+  if (submitButton) {
+    submitButton.innerHTML =
+      'Brief received <span aria-hidden="true">→</span>';
+    submitButton.disabled = true;
+  }
+
+  if (status) {
+    status.textContent =
+      'Thanks — the next step starts with a clear brief.';
+  }
+
+  form.reset();
+
+} catch (error) {
+  console.error('Contact form error:', error);
+
+  if (submitButton) {
+    submitButton.disabled = false;
+    submitButton.innerHTML =
+      'Send project brief <span aria-hidden="true">→</span>';
+  }
+
+  if (status) {
+    status.textContent =
+      'Something went wrong. Please try again.';
+  }
+}
