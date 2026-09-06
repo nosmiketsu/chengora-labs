@@ -56,12 +56,58 @@ document.querySelectorAll('.reveal').forEach((element) => revealObserver.observe
 const form = document.querySelector('[data-contact-form]');
 const status = document.querySelector('[data-form-status]');
 
-form?.addEventListener('submit', (event) => {
+form?.addEventListener('submit', async (event) => {
   event.preventDefault();
+
   const submitButton = form.querySelector('button[type="submit"]');
+
   if (submitButton) {
-    submitButton.innerHTML = 'Brief received <span aria-hidden="true">✓</span>';
     submitButton.disabled = true;
+    submitButton.innerHTML = 'Sending…';
   }
-  if (status) status.textContent = 'Thanks — the next step starts with a clear brief.';
+
+  try {
+    const formData = new FormData(form);
+
+    const response = await fetch(
+      'https://formsubmit.co/ajax/kimhaba19@gmail.com',
+      {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json'
+        },
+        body: formData
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Submission failed');
+    }
+
+    if (submitButton) {
+      submitButton.innerHTML =
+        'Brief received <span aria-hidden="true">→</span>';
+    }
+
+    if (status) {
+      status.textContent =
+        'Thanks — the next step starts with a clear brief.';
+    }
+
+    form.reset();
+
+  } catch (error) {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.innerHTML =
+        'Send project brief <span aria-hidden="true">→</span>';
+    }
+
+    if (status) {
+      status.textContent =
+        'Something went wrong. Please try again.';
+    }
+
+    console.error('Contact form error:', error);
+  }
 });
